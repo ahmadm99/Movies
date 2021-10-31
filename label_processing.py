@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
 
-df = pd.read_csv('dataset_final.csv', index_col=False)
+# df = pd.read_csv('dataset_final.csv', index_col=False)
+df = pd.read_csv('dataset_new.csv', index_col=False)
 genres_unique = []
 
 for j in range(df[df.columns[0]].count()):
@@ -27,6 +28,7 @@ df = df.reindex(df.columns.tolist() + genres_unique, axis=1, fill_value=0)
 #             df.loc[index, val] = 1
 
 # df = df.drop('genres', 1)
-df.to_csv('test.csv',index=False)
+# df.to_csv('test.csv',index=False)
+df.to_csv("dataset_new1.csv", index=False)
 print(genres_unique)
 
