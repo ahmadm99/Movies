@@ -16,7 +16,7 @@ import json
 import nltk
 import re
 import csv
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 import seaborn as sns
 from tqdm import tqdm
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -36,14 +36,14 @@ Now we will import the data uploaded to our Google drive. I will introduce you t
 """Let's load the movie metadata first. Please use '\t' as the separator as it is a tab separated file. """
 
 file_path = "movie.metadata.tsv"
-meta = pd.read_csv(file_path, sep = '\t', header = None)
+meta = pd.read_csv(file_path, sep='\t', header=None)
 
 meta.head()
 
 """There are no headers in this dataset. The first column is the **unique movie id**, the third column is the **name of the movie**, and the last column is the **movie genre(s)**. Let's add column names to these columns. We will not use rest of the columns in this analysis."""
 
 # rename columns
-meta.columns = ["movie_id",1,"movie_name",3,4,5,6,7,"genre"]
+meta.columns = ["movie_id", 1, "movie_name", 3, 4, 5, 6, 7, "genre"]
 
 """Now we will load the **movie plot dataset** into memory. This data comes in a text file with each row consisting a pair of a movie id and a plot of the movie. We will read it line-by-line."""
 
@@ -79,7 +79,7 @@ movies.head()
 meta['movie_id'] = meta['movie_id'].astype(str)
 
 # merge meta with movies
-movies = pd.merge(movies, meta[['movie_id', 'movie_name', 'genre']], on = 'movie_id')
+movies = pd.merge(movies, meta[['movie_id', 'movie_name', 'genre']], on='movie_id')
 
 movies.head()
 
@@ -100,8 +100,8 @@ json.loads(movies['genre'][0]).values()
 genres = []
 
 for i in movies['genre']:
-  genres.append(list(json.loads(i).values()))
-    
+    genres.append(list(json.loads(i).values()))
+
 movies['genre_new'] = genres
 
 """Some of the samples might contain no genre tags. Hence, we should take those samples out as they won't help much in model building."""
@@ -113,7 +113,7 @@ movies_new.shape, movies.shape
 
 """Only 411 samples had no genre tags. Let's check out the dataframe once again. """
 
-movies_new.head()
+# print(movies_new.head())
 
 """The genres are now in the list format which is going to be helpful since we will have to access these genre tags later.
 
@@ -121,7 +121,7 @@ If you are curious to know which all movie genres have been covered in this data
 """
 
 # get all genre tags in a list
-all_genres = sum(genres,[])
+all_genres = sum(genres, [])
 len(set(all_genres))
 
 """There are over 363 unique genre tags in our dataset. That is quite a big number. I can hardy recall 5-6 genres. So, let's find out what are these tags. We will use **FreqDist( )** of the nltk library to create a dictionary of genres and their occurence count across the dataset."""
@@ -131,10 +131,10 @@ all_genres_df = pd.DataFrame({'Genre': list(all_genres.keys()), 'Count': list(al
 
 """Sometimes visualizing data is better than putting out numbers. Let's plot the distribution of the movie genres."""
 
-g = all_genres_df.nlargest(columns="Count", n = 50) 
-plt.figure(figsize=(12,15))
-ax = sns.barplot(data=g, x= "Count", y = "Genre")
-ax.set(ylabel = 'Count')
+g = all_genres_df.nlargest(columns="Count", n=50)
+plt.figure(figsize=(12, 15))
+ax = sns.barplot(data=g, x="Count", y="Genre")
+ax.set(ylabel='Count')
 plt.show()
 
 """As expected, the most frequent tags are "Drama", "Comedy", "Romance", "Thriller", and "Action". The rest of the genres in the data are in some way or other derived from the top 5 genres. 
@@ -144,18 +144,20 @@ So, now you can decide whether you want to work with a certain number of most fr
 Next we will clean our a bit. I will use some very basic text cleaning steps as that is not the focus area of this article.
 """
 
+
 # function for text cleaning
 def clean_text(text):
     # remove backslash-apostrophe
     text = re.sub("\'", "", text)
     # remove everything alphabets
-    text = re.sub("[^a-zA-Z]"," ",text)
+    text = re.sub("[^a-zA-Z]", " ", text)
     # remove whitespaces
     text = ' '.join(text.split())
     # convert text to lowercase
     text = text.lower()
-    
+
     return text
+
 
 """Let's apply the function on the movie plots by using the apply-lambda duo."""
 
@@ -167,19 +169,21 @@ movies_new[['plot', 'clean_plot']].sample(3)
 
 """In the clean_plot column the text is in lowercase and there is also no punctuation mark. So, our text cleaning has worked like a charm. This function below can visualize the words with their frequencies, in a set of documents. Let's use it to find out the most frequent words in the movie plots."""
 
-def freq_words(x, terms = 30):
-  all_words = ' '.join([text for text in x])
-  all_words = all_words.split()
-  
-  fdist = nltk.FreqDist(all_words)
-  words_df = pd.DataFrame({'word':list(fdist.keys()), 'count':list(fdist.values())})
-  
-  # selecting top 20 most frequent words
-  d = words_df.nlargest(columns="count", n = terms) 
-  plt.figure(figsize=(12,15))
-  ax = sns.barplot(data=d, x= "count", y = "word")
-  ax.set(ylabel = 'Word')
-  plt.show()
+
+def freq_words(x, terms=30):
+    all_words = ' '.join([text for text in x])
+    all_words = all_words.split()
+
+    fdist = nltk.FreqDist(all_words)
+    words_df = pd.DataFrame({'word': list(fdist.keys()), 'count': list(fdist.values())})
+
+    # selecting top 20 most frequent words
+    d = words_df.nlargest(columns="count", n=terms)
+    plt.figure(figsize=(12, 15))
+    ax = sns.barplot(data=d, x="count", y="word")
+    ax.set(ylabel='Word')
+    plt.show()
+
 
 # print 100 most frequent words
 freq_words(movies_new['clean_plot'], 100)
@@ -190,18 +194,18 @@ nltk.download('stopwords')
 
 """Now we can remove the stopwords."""
 
-
-
 from nltk.corpus import stopwords
+
 stop_words = set(stopwords.words('english'))
+
 
 # function to remove stopwords
 def remove_stopwords(text):
     no_stopword_text = [w for w in text.split() if not w in stop_words]
     return ' '.join(no_stopword_text)
-  
-movies_new['clean_plot'] = movies_new['clean_plot'].apply(lambda x: remove_stopwords(x))
 
+
+movies_new['clean_plot'] = movies_new['clean_plot'].apply(lambda x: remove_stopwords(x))
 
 """Let's again check the most frequent words after the stopwords removal."""
 
@@ -214,8 +218,6 @@ freq_words(movies_new['clean_plot'], 100)
 I have earlier mentioned in the article that I will treat this multilable classification problem as a Binary Relevance problem. Hence, now I am going to one hot encode the target variable, i.e. *genre_new* by using sklearn's **MultiLabelBinarizer( )**. Since there are 363 unique genre tags, there are going to be 363 new target variables.
 """
 
-
-
 from sklearn.preprocessing import MultiLabelBinarizer
 
 multilabel_binarizer = MultiLabelBinarizer()
@@ -223,6 +225,7 @@ multilabel_binarizer.fit(movies_new['genre_new'])
 
 # transform target variable
 y = multilabel_binarizer.transform(movies_new['genre_new'])
+
 
 """We have successfully transformed the target variable and now let's turn our focus to extract features from the cleaned version of the movie plots. I have decided to go ahead with TF-IDF features. You are free to use any other feature extraction method such as Bag-of-Words, word2vec, GloVe, or ELMo. 
 
@@ -236,6 +239,8 @@ I recommend you check out these articles to learn more about different ways of c
 
 
 """
+# movies_new.to_csv("cmu_dataset.csv", index=False)
+# exit(1)
 
 tfidf_vectorizer = TfidfVectorizer(max_df=0.8, max_features=10000)
 
@@ -303,7 +308,7 @@ y_pred_prob = clf.predict_proba(xval_tfidf)
 
 """Now set a threshold value."""
 
-t = 0.3 # threshold value
+t = 0.3  # threshold value
 y_pred_new = (y_pred_prob >= t).astype(int)
 
 """I have tried 0.3 as the threshold value. You may try any other value as well. Let's check the F1 score again on these new predictions."""
@@ -328,6 +333,7 @@ To achieve this objective, let's build an inference function. It will take in a 
 *   Return the predicted movie genre tags
 """
 
+
 def infer_tags(q):
     q = clean_text(q)
     q = remove_stopwords(q)
@@ -335,8 +341,12 @@ def infer_tags(q):
     q_pred = clf.predict(q_vec)
     return multilabel_binarizer.inverse_transform(q_pred)
 
+
 """Let's test this inference function on a few samples from the validation set."""
 
 for i in range(5):
     k = xval.sample(1).index[0]
-    print("Movie: ", movies_new['movie_name'][k], "\nPredicted genre: ", infer_tags(xval[k])), print("Actual genre: ",movies_new['genre_new'][k], "\n")
+    print("Movie: ", movies_new['movie_name'][k], "\nPredicted genre: ", infer_tags(xval[k])), print("Actual genre: ",
+                                                                                                     movies_new[
+                                                                                                         'genre_new'][
+                                                                                                         k], "\n")

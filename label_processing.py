@@ -2,11 +2,13 @@ import pandas as pd
 import numpy as np
 
 # df = pd.read_csv('dataset_final.csv', index_col=False)
-df = pd.read_csv('dataset_new.csv', index_col=False)
+# df = pd.read_csv('dataset_new.csv', index_col=False)
+df = pd.read_csv('cmu_dataset.csv', index_col=False)
+
 genres_unique = []
 
 for j in range(df[df.columns[0]].count()):
-    g = df['genres'][j]
+    g = df['genre_new'][j]
     g = g.replace("'","")
     g = g.replace(" ","")
     g = g[1:-1]
@@ -29,6 +31,7 @@ df = df.reindex(df.columns.tolist() + genres_unique, axis=1, fill_value=0)
 
 # df = df.drop('genres', 1)
 # df.to_csv('test.csv',index=False)
-df.to_csv("dataset_new1.csv", index=False)
+# df.to_csv("dataset_new1.csv", index=False)
+df.to_csv("cmu_dataset2.csv", index=False)
 print(genres_unique)
 

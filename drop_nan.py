@@ -1,6 +1,15 @@
+import ast
+
 import pandas as pd
+import re
+df = pd.read_csv('dataset_new1.csv', index_col=False)
+df.genres = df.genres.apply(ast.literal_eval)
 
+# for i in range(df[df.columns[0]].count()):
+#     row = df['genres'][i]
+#     df.at[i, 'genres'] = ast.literal_eval(row)
 
+df.to_csv('dataset_new2.csv', index=False)
 # # OVERVIEW
 # df = pd.read_csv('clean.csv', usecols=['overview'])
 # skip = []
